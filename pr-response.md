@@ -54,11 +54,15 @@ def add_to_watchlist(user_id, film_id):
 
 **How I verified:**
 
-Added **test/test_watchlist** that deals with all watchlist services. The file test weather a film is inside the users watchlist, test if the AlreadyInWatchlistError works corrctly, and test if add_to_watchlist() works as expected
+Used test_film_already_inside_watchlist() inside test/test_watchtest.
 
 ## Comment 3 — Missing test
 **What I did:**
+Added **test/test_watchlist** that deals with all watchlist services. The file test weather a film is inside the users watchlist, test if the AlreadyInWatchlistError works corrctly, and test if add_to_watchlist() works as expected
+
 **How I verified:**
+
+Running the file for each test separately, making sure everything went smooth and works as expected.
 
 ## Comment 4 — Default visibility
 **My position:**
