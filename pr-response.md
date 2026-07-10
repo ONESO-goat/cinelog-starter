@@ -4,8 +4,11 @@
 <!-- Fill in at the end — how you used AI tools during this project -->
 
 ## Comment 1 — Rename
-**What I did:**
+**What I did:** 
+    Changed the name of the function save_to_watchlist() -> add_to_watchlist() inside services/watchlist_service.py
+
 **How I verified:**
+    Checking that all calls of the function was add_to_watchlist() and not save_to_watchlist()
 
 ## Comment 2 — Deduplication
 **What I did:**
