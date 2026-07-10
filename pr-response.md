@@ -91,8 +91,13 @@ Running the file for each test separately, making sure everything went smooth an
 
 ## Comment 6 — Rebase
 **What conflicted:**
+    Inside WatchlistEntry, the film_id was an integer column rather than string.
+
 **How I resolved it:**
+    Just make it string that takes the length of an uuid.
+    
 **How I verified no conflict remains:**
+    Continued the rebase where I faced no other conflict.
 
 ## PR Description
 <!-- Written at the end — feature overview, design decisions, manual testing steps -->

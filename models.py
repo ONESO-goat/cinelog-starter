@@ -72,8 +72,6 @@ class CollectionEntry(db.Model):
             "date_added": self.date_added.isoformat(),
             "rating": self.rating,
         }
-<<<<<<< HEAD
-=======
 
 
 class WatchlistEntry(db.Model):
@@ -97,4 +95,3 @@ class WatchlistEntry(db.Model):
             "date_added": self.date_added.isoformat(),
             "public": self.public,
         }
->>>>>>> 7868f54 (feat: added a unique limiter to watchlist model so there can only be 1 instance of a user and a film. Added the exception AlreadyInWatchlistError to handle already existing user and film watchlist instances. I addded code to the that checks if the user already has the flim listed inside a watchlist)
