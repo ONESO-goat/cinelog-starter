@@ -65,9 +65,19 @@ Added **test/test_watchlist** that deals with all watchlist services. The file t
 Running the file for each test separately, making sure everything went smooth and works as expected.
 
 ## Comment 4 — Default visibility
-**My position:**
-**Reasoning:**
+**My position:** 
+    **Agreed**
+
+**Reasoning:** 
+    Defaulting the watchlist to public seems to be well put and is the norm in the industery. Just make sure there's an option where the user can set it to private either during or after deployment. This choice helps with the social scene of the application.
+
 **Tradeoff acknowledged:**
+
+* A new user is lost on where or how to set the post to private 
+* The user doesn't want to waste their time setting every new watchlist item to private manually
+* The user forgot to set the watchlist to private during deployment
+* Possible risk of other users interacting with the watchlist maliciously
+* If the user has loads of films in their watchlist and want to put all to private. But this can be said vice versa
 
 ## Comment 5 — Sort order
 **My position:**
