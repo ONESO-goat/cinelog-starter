@@ -81,8 +81,13 @@ Running the file for each test separately, making sure everything went smooth an
 
 ## Comment 5 — Sort order
 **My position:**
+    Go with **Date Added** (Agree with reviewer)
+
 **Reasoning:**
+   Defaulting to "Date Added" aligns with modern user experience in applications. Surfacing the most recent items reduces cognitive load, as users naturally expect to see their latest actions at the top of the list. A chronological view provides context regarding user engagement and momentum, making the application feel dynamic and personalized to their recent activity rather than stagnant.
+
 **Engagement with reviewer's point:**
+    I fully agree with the reviewer's recommendation to default to Date Added. Their point correctly identifies that a chronological sort order enhances usability by prioritizing top  of mind content. By implementing this, we ensure that users don't have to hunt for their newly created items, creating a much smoother onboarding and daily workflow.
 
 ## Comment 6 — Rebase
 **What conflicted:**
