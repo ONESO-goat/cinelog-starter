@@ -1,22 +1,37 @@
-# PR Response Doc — CineLog Watchlist Feature
+# PR Response Document — CineLog Watchlist Feature
 
 ## AI Usage
-<!-- Fill in at the end — how you used AI tools during this project -->
 
-## Comment 1 — Rename
-**What I did:** 
-    Changed the name of the function save_to_watchlist() -> add_to_watchlist() inside services/watchlist_service.py
+I used AI (ChatGPT) for:
 
-**How I verified:**
-    Checking that all calls of the function was add_to_watchlist() and not save_to_watchlist()
+* Improving the structure
+* Improving the grammar
+* Ensuring the document followed the rubric and included all required context.
 
-## Comment 2 — Deduplication
-**What I did:**
+I did not use AI while writing or implementing the code.
 
-added a unique limiter
+---
+
+# Comment 1 — Rename
+
+### What I changed
+
+Renamed the function `save_to_watchlist()` to `add_to_watchlist()` in `services/watchlist_service.py` to better reflect its purpose.
+
+### How I verified it
+
+I used my editor's project-wide search to locate every reference to `save_to_watchlist()` and updated each call site to `add_to_watchlist()`. This included the service implementation and any files that referenced the function. After the rename, I ran the test suite to confirm there were no remaining references to the old function name.
+
+
+---
+
+# Comment 2 — Deduplication
+
+### What I changed
+
+To prevent duplicate watchlist entries, I added a unique constraint to the `WatchlistEntry` model so that each user can only save a specific film once.
 
 ```python
-
 class Film(db.Model):
     ...
     watchlist_entries = db.relationship("WatchlistEntry", backref="film", lazy=True)
@@ -24,80 +39,144 @@ class Film(db.Model):
 class WatchlistEntry(db.Model):
     ...
     __table_args__ = (
-            db.UniqueConstraint("user_id", "film_id", name="unique_user_film_saved_to_watchlist"),
-        )
+        db.UniqueConstraint(
+            "user_id",
+            "film_id",
+            name="unique_user_film_saved_to_watchlist",
+        ),
+    )
 ```
-to watchlist model so there can only be 1 instance of a user and a film.
 
-Added the exception **AlreadyInWatchlistError**
+I also created an `AlreadyInWatchlistError` exception to clearly indicate when a duplicate watchlist entry is attempted.
+
 ```python
 class AlreadyInWatchlistError(Exception):
     """Raised when a film is already in the user's watchlist."""
     pass
 ```
 
-to handle already existing user and film watchlist instances. 
+Finally, I updated `add_to_watchlist()` to check whether the user already has the film in their watchlist before creating a new entry.
 
-I addded code to the that checks if the user already has the flim listed inside a watchlist.
-```python 
+```python
 def add_to_watchlist(user_id, film_id):
     ...
     existing = WatchlistEntry.query.filter_by(
-        user_id=user_id, film_id=film_id
+        user_id=user_id,
+        film_id=film_id,
     ).first()
-    
+
     if existing:
         raise AlreadyInWatchlistError(
             f"Film '{film_id}' is already in this user's watchlist"
         )
 ```
 
-**How I verified:**
+If a matching watchlist entry already exists, the function raises `AlreadyInWatchlistError` instead of inserting a duplicate record.
 
-Used test_film_already_inside_watchlist() inside test/test_watchtest.
+To keep the implementation consistent with the rest of the codebase, I modeled this approach after the existing `add_to_collection()` service, which follows a similar pattern of checking for an existing record before creating a new one.
 
-## Comment 3 — Missing test
-**What I did:**
-Added **test/test_watchlist** that deals with all watchlist services. The file test weather a film is inside the users watchlist, test if the AlreadyInWatchlistError works corrctly, and test if add_to_watchlist() works as expected
+### How I verified it
 
-**How I verified:**
+I verified this behavior using `test_film_already_inside_watchlist()` in `tests/test_watchlist.py`, confirming that duplicate entries correctly raise the expected exception.
 
-Running the file for each test separately, making sure everything went smooth and works as expected.
+### Functionabilty
 
-## Comment 4 — Default visibility
-**My position:** 
-    **Agreed**
+I modeled this implementation after the existing `add_to_collection()` service, which performs a similar existence check before creating a new database entry. This keeps the watchlist service consistent with the rest of the codebase.
 
-**Reasoning:** 
-    Defaulting the watchlist to public seems to be well put and is the norm in the industery. Just make sure there's an option where the user can set it to private either during or after deployment. This choice helps with the social scene of the application.
+---
 
-**Tradeoff acknowledged:**
+# Comment 3 — Missing Test
 
-* A new user is lost on where or how to set the post to private 
-* The user doesn't want to waste their time setting every new watchlist item to private manually
-* The user forgot to set the watchlist to private during deployment
-* Possible risk of other users interacting with the watchlist maliciously
-* If the user has loads of films in their watchlist and want to put all to private. But this can be said vice versa
+### What I changed
 
-## Comment 5 — Sort order
-**My position:**
-    Go with **Date Added** (Agree with reviewer)
+I added a new test file, `tests/test_watchlist.py`, covering the watchlist service.
 
-**Reasoning:**
-   Defaulting to "Date Added" aligns with modern user experience in applications. Surfacing the most recent items reduces cognitive load, as users naturally expect to see their latest actions at the top of the list. A chronological view provides context regarding user engagement and momentum, making the application feel dynamic and personalized to their recent activity rather than stagnant.
+The tests verify:
 
-**Engagement with reviewer's point:**
-    I fully agree with the reviewer's recommendation to default to Date Added. Their point correctly identifies that a chronological sort order enhances usability by prioritizing top  of mind content. By implementing this, we ensure that users don't have to hunt for their newly created items, creating a much smoother onboarding and daily workflow.
+* Adding a film to a watchlist successfully.
 
-## Comment 6 — Rebase
-**What conflicted:**
-    Inside WatchlistEntry, the film_id was an integer column rather than string.
+  I implemented `test_add_to_watchlist()` which adds a film by id. This test verifies that the watchlist contains the expected film after it has been added and that the returned titles include the sample film.
 
-**How I resolved it:**
-    Just make it string that takes the length of an uuid.
-    
-**How I verified no conflict remains:**
-    Continued the rebase where I faced no other conflict.
+* Attempting to add the same film twice raises `AlreadyInWatchlistError`.
 
-## PR Description
-<!-- Written at the end — feature overview, design decisions, manual testing steps -->
+* Attempting to add a nonexistent `film_id` is handled correctly.
+
+  I did this by Adding `test_add_to_watchlist_nonexistent_film()` which verifies that attempting to add a film ID that does not exist raises the expected exception. I modeled this after the existing collection service tests that validate invalid IDs.
+
+* `add_to_watchlist()` behaves as expected under normal and error conditions.
+
+The test for a nonexistent `film_id` was modeled after the existing service tests that validate invalid IDs, following the same testing structure and assertions used elsewhere in the project.
+
+### How I verified it
+
+I ran each test individually before running the complete test suite to ensure every test passed successfully.
+
+---
+
+# Comment 4 — Default Visibility
+
+### My position
+
+**I agree that watchlists should default to public.**
+
+### Reasoning
+
+CineLog is designed to encourage users to discover films through other people's activity. Making watchlists public by default makes it easier for users to browse recommendations, share what they plan to watch, and engage with the community. Users who prefer more privacy should still have the option to make their watchlist private at any time.
+
+### Trade-offs acknowledged
+
+Making watchlists private by default would better protect user privacy and require users to intentionally share their watchlists. However, because CineLog emphasizes movie discovery and social interaction, a public default better supports the platform's primary goal while still allowing users to change the visibility setting if they choose.
+
+---
+
+# Comment 5 — Sort Order
+
+### My position
+
+**I agree with the reviewer that "Date Added" should be the default sort order.**
+
+### Reasoning
+
+Most users return to their watchlist to continue watching or manage films they have recently saved. Showing the newest additions first makes recent activity immediately visible, reducing the time users spend searching for newly added films. This follows common user expectations across movie, shopping, and bookmarking applications.
+
+### Response to the reviewer's suggestion
+
+I agree with the maintainer's point that users generally want to see what they added most recently. A chronological order prioritizes the films that are most likely to be relevant during everyday use, making the watchlist feel more responsive and easier to navigate than an alphabetical list.
+
+---
+
+# Comment 6 — Rebase
+
+### What conflicted
+
+During the rebase, there was a conflict because one branch stored `film_id` as an integer while the updated schema stored film_id values as UUID strings
+
+### How I resolved it
+
+I resolved the conflict by updating the watchlist model to consistently use UUID strings for `film_id`, matching the current database schema used throughout the project.
+
+### How I verified it
+
+After resolving the conflict, I completed the rebase successfully, confirmed there were no remaining merge conflicts, and reran the relevant tests to verify the feature still worked correctly.
+
+---
+
+# PR Description
+
+## Overview
+
+This pull request adds the Watchlist feature to CineLog, llows users to save films they want to watch later, prevents duplicate entries, and supports configurable watchlist visibility.
+
+## Design Decisions
+
+* **Default Visibility:** Watchlists are public by default to encourage movie discovery and sharing within the CineLog community while still allowing users to make their watchlists private.
+* **Default Sort Order:** Watchlists are sorted by **Date Added**, ensuring that recently saved films appear first since users typically revisit the newest items on their list.
+
+## Manual Testing
+
+1. Create or log into a user account.
+2. Add a film to the watchlist.
+3. Verify the film appears in the watchlist.
+4. Attempt to add the same film again and confirm that `AlreadyInWatchlistError` is raised (or the duplicate is prevented).
+5. Add multiple films and verify they are displayed in **Date Added** order.
+6. Change the watchlist visibility and confirm the updated setting is reflected correctly.

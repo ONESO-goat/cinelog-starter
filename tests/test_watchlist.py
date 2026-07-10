@@ -9,6 +9,7 @@ before writing your own tests for the watchlist feature (see Comment 4).
 import pytest
 from app import create_app, db
 from models import User, Film, CollectionEntry, WatchlistEntry
+from services.collection_service import FilmNotFoundError
 from services.watchlist_service import (
     AlreadyInWatchlistError,
     get_watchlist,
@@ -67,6 +68,17 @@ def test_film_is_inside_users_watchlist(app, sample_user, sample_film, sample_wa
         movie_ids= [film['id'] for film in films]
         assert sample_film in movie_ids
 
+def test_add_to_watchlist_nonexistent_film(app, sample_user, sample_film, sample_watchlist):
+    """
+        Adding a film_id that doesn't exist in the database should raise
+        FilmNotFoundError, not a database integrity error.
+    """
+    fake_film_id = "00000000-0000-0000-0000-000000000000"
+    with app.app_context():
+        with pytest.raises(FilmNotFoundError):
+            add_to_watchlist(user_id=sample_user, film_id=fake_film_id)
+        
+    
 def test_film_already_inside_watchlist(app, sample_user, sample_film, sample_watchlist):
     with app.app_context():
         with pytest.raises(AlreadyInWatchlistError):
