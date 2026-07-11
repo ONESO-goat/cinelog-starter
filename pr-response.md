@@ -109,6 +109,13 @@ I ran each test individually before running the complete test suite to ensure ev
 
 ---
 
+# Stretch Feature — Second Test Selection & Reasoning
+
+### Extra Chosen Edge Case
+Beyond the required nonexistent `film_id` test, I implemented an additional targeted edge case test: `test_remove_film_not_in_watchlist()`.
+
+---
+
 # Comment 4 — Default Visibility
 
 ### My position
