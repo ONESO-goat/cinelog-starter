@@ -13,6 +13,10 @@ class AlreadyInWatchlistError(Exception):
     """Raised when a film is already in the user's watchlist."""
     pass
 
+class filmNotInWatchlistError(Exception):
+    """Raised when a film is not inside the user's watchlist."""
+    pass
+
 def add_to_watchlist(user_id, film_id):
     """
     Add a film to a user's watchlist.
@@ -73,3 +77,37 @@ def get_watchlist(user_id):
         result.append(film_dict)
 
     return result
+
+
+
+def remove_from_watchlist(user_id, film_id):
+    """
+    remove a film to a user's watchlist.
+
+    Args:
+        user_id (str): UUID of the user.
+        film_id (int): ID of the film. (Note: integer — pre-refactor)
+
+    Returns:
+        WatchlistEntry: The newly created entry.
+
+    Raises:
+        FilmNotFoundError: If film_id does not exist.
+    """
+    film = db.session.get(Film, film_id)
+    if film is None:
+        raise FilmNotFoundError(f"No film found with id '{film_id}'")
+
+    entry = WatchlistEntry.query.filter_by(
+        user_id=user_id, film_id=film_id
+    ).first()
+    
+    if not entry:
+        raise filmNotInWatchlistError(
+            f"Film '{film_id}' is not in the user's watchlist"
+        )
+
+    db.session.delete(entry)
+    db.session.commit()
+    return entry
+

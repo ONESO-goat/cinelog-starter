@@ -161,6 +161,26 @@ After resolving the conflict, I completed the rebase successfully, confirmed the
 
 ---
 
+# Comment 7 — `remove_from_watchlist()`
+
+### What I changed
+
+I implemented `remove_from_watchlist()` to allow users to remove a film from their watchlist. The function searches for a matching watchlist entry using the user ID and film ID. If an entry is found, it is deleted from the database. If the film is not present in the user's watchlist, the function raises the appropriate exception instead of attempting to delete a nonexistent record.
+
+To keep the implementation consistent with the rest of the project, I followed the same service layer pattern used by the existing watchlist and collection services, where database operations are validated before being executed and meaningful exceptions are raised for error conditions.
+
+### How I verified it
+
+I added two tests to tests/test_watchlist.py:
+
+* `test_remove_film_from_watchlist()` verifies that a film is successfully removed from a user's watchlist.
+
+* `test_remove_film_not_in_watchlist()` verifies that attempting to remove a film that is not in the user's watchlist raises the expected exception instead of silently succeeding.
+
+I ran both tests individually and then executed the complete test suite to confirm the removal functionality worked correctly without affecting existing watchlist behavior.
+
+--- 
+
 # PR Description
 
 ## Overview

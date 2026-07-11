@@ -12,8 +12,10 @@ from models import User, Film, CollectionEntry, WatchlistEntry
 from services.collection_service import FilmNotFoundError
 from services.watchlist_service import (
     AlreadyInWatchlistError,
+    filmNotInWatchlistError,
     get_watchlist,
-    add_to_watchlist
+    add_to_watchlist, 
+    remove_from_watchlist
 )
 
 
@@ -101,3 +103,39 @@ def test_add_film_to_watchlist(app, sample_user):
         
         assert "chronicle" in movie_titles
         assert "project x" in movie_titles
+
+def test_film_not_inside_watchlist(app, sample_user, sample_film, sample_watchlist):
+    movie1 = Film(title="project x", year=2012, genre="comedy")
+
+    db.session.add(movie1)
+    db.session.commit()
+
+    with app.app_context():
+        with pytest.raises(filmNotInWatchlistError):
+            remove_from_watchlist(user_id=sample_user, film_id=movie1.id)
+        
+    
+def test_remove_film_to_watchlist(app, sample_user):
+    with app.app_context():
+        movie1 = Film(title="project x", year=2012, genre="comedy")
+        movie2 = Film(title="chronicle", year=2012, genre="sci-fi")
+        
+        db.session.add_all([movie1, movie2])
+        db.session.commit()
+        
+        add_to_watchlist(user_id=sample_user, film_id=movie1.id)
+        add_to_watchlist(user_id=sample_user, film_id=movie2.id)
+        films = get_watchlist(user_id=sample_user)
+        movie_titles = [film['title'] for film in films]
+        
+        assert "chronicle" in movie_titles
+        assert "project x" in movie_titles
+        
+        remove_from_watchlist(user_id=sample_user, film_id=movie1.id)
+        remove_from_watchlist(user_id=sample_user, film_id=movie2.id)
+        films = get_watchlist(user_id=sample_user)
+        movie_titles = [film['title'] for film in films]
+        
+        assert "chronicle" not in movie_titles
+        assert "project x" not in movie_titles
+        
