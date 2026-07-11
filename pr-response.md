@@ -256,7 +256,7 @@ This pull request adds the Watchlist feature to CineLog, allows users to save fi
 ## Manual Testing
 
 1. Create or log into a user account.
-2. Add a film to the watchlist.
+2. Add a film to the watchlist, setting the `public` parameter of choice.
 3. Verify the film appears in the watchlist.
 4. Attempt to add the same film again and confirm the duplicate is rejected.
 5. Remove the film and verify it no longer appears in the watchlist.
@@ -264,3 +264,8 @@ This pull request adds the Watchlist feature to CineLog, allows users to save fi
 7. Add multiple films and verify they appear in Date Added order.
 8. Send a PATCH request with `public=false` and verify the watchlist becomes private.
 9. Send another PATCH request with `public=true` and verify it becomes public again.
+
+---
+
+## Commit history log
+<img width="1696" height="783" alt="commit_history_log" src="https://github.com/user-attachments/assets/58ba0a60-1563-4a84-b55c-06eecbb050f8" />
