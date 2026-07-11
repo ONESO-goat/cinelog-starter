@@ -12,7 +12,7 @@ from models import User, Film, CollectionEntry, WatchlistEntry
 from services.collection_service import FilmNotFoundError
 from services.watchlist_service import (
     AlreadyInWatchlistError,
-    filmNotInWatchlistError,
+    FilmNotInWatchlistError,
     get_watchlist,
     add_to_watchlist, 
     handle_watchlist_publicity,
@@ -112,7 +112,7 @@ def test_film_not_inside_watchlist(app, sample_user, sample_film, sample_watchli
     db.session.commit()
 
     with app.app_context():
-        with pytest.raises(filmNotInWatchlistError):
+        with pytest.raises(FilmNotInWatchlistError):
             remove_from_watchlist(user_id=sample_user, film_id=movie1.id)
         
     
