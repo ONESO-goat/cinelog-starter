@@ -116,6 +116,17 @@ Beyond the required nonexistent `film_id` test, I implemented an additional targ
 
 ---
 
+# Stretch Feature — Second Test Selection & Reasoning
+
+### Extra Chosen Edge Case
+Beyond the required nonexistent `film_id` test, I implemented an additional targeted edge case test: `test_remove_film_not_in_watchlist()`.
+
+### Why this case was chosen
+
+I specifically chose to test attempting to remove a film that doesn't exist in the user's watchlist to ensure our deletion operations fail loudly and defensively rather than failing silently. In a production state, if a client interface attempts to delete an item that isn't present, a silent success could mask desynchronizations between the frontend UI cache and the backend database state. Forcing the service layer to catch this state and raise a explicit `FilmNotInWatchlistError` guarantees database integrity and ensures strict tracking accuracy across asynchronous client requests.
+
+---
+
 # Comment 4 — Default Visibility
 
 ### My position
