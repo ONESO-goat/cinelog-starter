@@ -15,6 +15,7 @@ from services.watchlist_service import (
     filmNotInWatchlistError,
     get_watchlist,
     add_to_watchlist, 
+    handle_watchlist_publicity,
     remove_from_watchlist
 )
 
@@ -139,3 +140,12 @@ def test_remove_film_to_watchlist(app, sample_user):
         assert "chronicle" not in movie_titles
         assert "project x" not in movie_titles
         
+def test_handle_watchlist_publicity(app, sample_user, sample_film, sample_watchlist):
+    """
+    Toggle the publicity of a watchlist.
+    """
+    with app.app_context():
+        handle_watchlist_publicity(user_id=sample_user, watchlist_id=sample_watchlist, public=False)
+        assert WatchlistEntry.query.get(sample_watchlist).public is False# entry.public defaults to public
+        handle_watchlist_publicity(user_id=sample_user, watchlist_id=sample_watchlist, public=True)
+        assert WatchlistEntry.query.get(sample_watchlist).public is True

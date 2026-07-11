@@ -79,10 +79,6 @@ To keep the implementation consistent with the rest of the codebase, I modeled t
 
 I verified this behavior using `test_film_already_inside_watchlist()` in `tests/test_watchlist.py`, confirming that duplicate entries correctly raise the expected exception.
 
-### Functionabilty
-
-I modeled this implementation after the existing `add_to_collection()` service, which performs a similar existence check before creating a new database entry. This keeps the watchlist service consistent with the rest of the codebase.
-
 ---
 
 # Comment 3 — Missing Test
@@ -101,7 +97,7 @@ The tests verify:
 
 * Attempting to add a nonexistent `film_id` is handled correctly.
 
-  I did this by Adding `test_add_to_watchlist_nonexistent_film()` which verifies that attempting to add a film ID that does not exist raises the expected exception. I modeled this after the existing collection service tests that validate invalid IDs.
+  I added `test_add_to_watchlist_nonexistent_film()` which verifies that attempting to add a film ID that does not exist raises the expected exception. I modeled this after the existing collection service tests that validate invalid IDs.
 
 * `add_to_watchlist()` behaves as expected under normal and error conditions.
 
@@ -149,7 +145,7 @@ I agree with the maintainer's point that users generally want to see what they a
 
 ### What conflicted
 
-During the rebase, there was a conflict because one branch stored `film_id` as an integer while the updated schema stored film_id values as UUID strings
+During the rebase, there was a conflict because one branch stored `film_id` as an integer while the updated schema stored film_id values as UUID strings.
 
 ### How I resolved it
 
@@ -181,11 +177,58 @@ I ran both tests individually and then executed the complete test suite to confi
 
 --- 
 
+# Comment 8 — Watchlist Visibility Endpoint
+
+### What I changed
+
+I added a `PATCH` route, `update_watchlist_publicity()`, that allows a user to update the visibility of a watchlist.
+
+TThe route accepts a `watchlist_id` identifying the watchlist and a `public` boolean parameter. Setting public=True makes the watchlist public, while public=False makes it private. The route passes these values to `handle_watchlist_publicity()` in `services/watchlist_service.py`, which updates the selected watchlist accordingly.
+
+New watchlists default to `public=True`. If the provided watchlist ID does not exist or no ID is supplied, the service raises the appropriate exception instead of updating the database.
+
+### How a caller uses it
+
+A client sends a `PATCH` request with the desired visibility:
+
+```json
+{
+    "watchlist_id": "id of the watchlist being changed",
+    "public": false
+}
+```
+
+Setting `"public": false` makes the watchlist private, while `"public": true` makes it public.
+
+### How I verified it
+
+I added `test_handle_watchlist_publicity()` to `tests/test_watchlist.py`. The test verifies that the visibility updates correctly by first setting the watchlist to private and then back to public using the `public` parameter.
+
+```python
+handle_watchlist_publicity(
+    user_id=sample_user,
+    watchlist_id=sample_watchlist,
+    public=False,
+)
+assert Watchlist.query.get(sample_watchlist).public is False
+
+handle_watchlist_publicity(
+    user_id=sample_user,
+    watchlist_id=sample_watchlist,
+    public=True,
+)
+assert Watchlist.query.get(sample_watchlist).public is True
+```
+
+This confirms that the service correctly updates the watchlist to the requested visibility state.
+
+---
+
 # PR Description
 
 ## Overview
 
-This pull request adds the Watchlist feature to CineLog, llows users to save films they want to watch later, prevents duplicate entries, and supports configurable watchlist visibility.
+This pull request adds the Watchlist feature to CineLog, allows users to save films they want to watch later, prevents duplicate entries, and supports configurable watchlist visibility.
 
 ## Design Decisions
 
@@ -197,6 +240,9 @@ This pull request adds the Watchlist feature to CineLog, llows users to save fil
 1. Create or log into a user account.
 2. Add a film to the watchlist.
 3. Verify the film appears in the watchlist.
-4. Attempt to add the same film again and confirm that `AlreadyInWatchlistError` is raised (or the duplicate is prevented).
-5. Add multiple films and verify they are displayed in **Date Added** order.
-6. Change the watchlist visibility and confirm the updated setting is reflected correctly.
+4. Attempt to add the same film again and confirm the duplicate is rejected.
+5. Remove the film and verify it no longer appears in the watchlist.
+6. Attempt to remove the same film again and verify the expected error is returned.
+7. Add multiple films and verify they appear in Date Added order.
+8. Send a PATCH request with `public=false` and verify the watchlist becomes private.
+9. Send another PATCH request with `public=true` and verify it becomes public again.

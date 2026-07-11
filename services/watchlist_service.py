@@ -8,6 +8,8 @@ from app import db
 from models import Film, WatchlistEntry
 from services.collection_service import FilmNotFoundError
 
+class WatchlistDoesntExistError(Exception):
+    pass
 
 class AlreadyInWatchlistError(Exception):
     """Raised when a film is already in the user's watchlist."""
@@ -78,8 +80,33 @@ def get_watchlist(user_id):
 
     return result
 
+def handle_watchlist_publicity(user_id, watchlist_id, public:bool)->bool:
+    """_summary_
 
+    Args:
+        user_id (str): User id
+        watchlist_id (str): Watchlist id
+        set_to (bool): The option weather to make the watchlist public or private
 
+    Raises:
+        ValueError: If the watchlist_id was not provided
+        WatchlistDoesntExistError: if the user doesnt have a watchlist with this id
+
+    Returns:
+        bool: weather the watchlist was set to public or not
+    """
+    if not watchlist_id or public is None:
+        raise ValueError("watchlist id or publicity choice is required")
+    
+    entry = WatchlistEntry.query.filter_by(id=watchlist_id, user_id=user_id).first()
+    if not entry:
+        raise WatchlistDoesntExistError(f"'{watchlist_id}' doesnt exist for this user")
+
+    entry.public = public
+    
+    db.session.commit()
+    return entry.public
+    
 def remove_from_watchlist(user_id, film_id):
     """
     remove a film to a user's watchlist.
